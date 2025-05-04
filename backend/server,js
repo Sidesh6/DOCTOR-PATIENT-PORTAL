@@ -1,0 +1,46 @@
+// server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const app = express();
+const port = 3001; // Backend port
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/doctor_patient_portal', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+// Define a Patient schema
+const patientSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  prescriptions: Array,
+});
+
+// Create a Patient model
+const Patient = mongoose.model('Patient', patientSchema);
+
+// API endpoint to get all patients
+app.get('/api/patients', async (req, res) => {
+  const patients = await Patient.find();
+  res.json(patients);
+});
+
+// API endpoint to create a new patient
+app.post('/api/patients', async (req, res) => {
+  const newPatient = new Patient(req.body);
+  await newPatient.save();
+  res.status(201).json(newPatient);
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
+});
